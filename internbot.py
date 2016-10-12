@@ -2,6 +2,7 @@ import os
 import time
 from slackclient import SlackClient
 from commands import *
+import json
 
 BOT_ID = os.environ.get("SLACK_BOT_ID")
 AT_BOT = "<@" + BOT_ID + ">"
@@ -13,6 +14,8 @@ def handle_command(command, channel):
     response = "Not sure what you mean. Use the *" + EXAMPLE_COMMAND + "* command with numbers, delimited by spaces."
     if command.startswith("add"):
         response = add(command)
+    elif command.startswith("help"):
+        response = help()
 
     slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
 
@@ -22,8 +25,9 @@ def parse_slack_output(slack_rtm_output):
         for output in output_list:
             if output and 'text' in output and AT_BOT in output['text']:
                 # return text after the @ mention, whitespace removed
-                return output['text'].split(AT_BOT)[1].strip().lower(), \
-                       output['channel']
+                with open('data.txt', 'w') as outfile:
+                    json.dump(output, outfile)
+                return output['text'].split(AT_BOT)[1].strip().lower(), output['channel']
     return None, None
 
 if __name__ == "__main__":
